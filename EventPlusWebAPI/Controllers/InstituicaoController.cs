@@ -36,7 +36,7 @@ namespace EventPlusWebAPI.Controllers
             {
                 var instituicao = new Instituicao()
                 {
-                    CNPJ = DTO.CNPJ,
+                    Cnpj = DTO.CNPJ,
                     NomeFantasia = DTO.NomeFantasia,
                     Endereco = DTO.Endereco
                 };
@@ -92,7 +92,7 @@ namespace EventPlusWebAPI.Controllers
                 var instituicao = new Instituicao()
                 {
                     IdInstituicao = id,
-                    CNPJ = DTO.CNPJ,
+                    Cnpj = DTO.CNPJ,
                     NomeFantasia = DTO.NomeFantasia,
                     Endereco = DTO.Endereco
                 };

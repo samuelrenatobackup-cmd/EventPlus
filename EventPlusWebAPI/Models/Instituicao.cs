@@ -16,7 +16,7 @@ public partial class Instituicao
     [StringLength(14)]
     [Unicode(false)]
     public string Cnpj { get; set; } = null!;
-    public string CNPJ { get; internal set; }
+   
     [StringLength(100)]
     [Unicode(false)]
     public string NomeFantasia { get; set; } = null!;

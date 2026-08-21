@@ -1,127 +1,113 @@
-﻿using EventPlusWebAPI.DTO;
+﻿
+using EventPlusWebAPI.DTO;
 using EventPlusWebAPI.Interfaces;
 using EventPlusWebAPI.Models;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventPlusWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
     public class EventoController : ControllerBase
     {
-        private readonly IEvento _evento;
+        private readonly IEvento _eventoRepository;
 
-        public EventoController(IEvento evento)
+        public EventoController(IEvento eventoRepository)
         {
-            _evento = evento;
+            _eventoRepository = eventoRepository;
+        }
+
+        [HttpPost]
+        public IActionResult Post(EventoDTO dto)
+        {
+            try
+            {
+                var evento = new Evento
+                {
+                    NomeEvento = dto.NomeEvento,
+                    Descricao = dto.Descricao,
+                    DataEvento = dto.DataEvento,
+                    ImagemUrl = dto.ImagemUrl,
+                    IdTipoEvento = dto.IdTipoEvento,
+                    IdInstituicao = dto.IdInstituicao
+                };
+
+                _eventoRepository.Cadastrar(evento);
+                return StatusCode(201, evento);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
-        public async Task<IActionResult> Listar()
+        public IActionResult Get()
         {
             try
             {
-                return Ok(await _evento.Listar());
+                return Ok(_eventoRepository.Listar());
             }
-            catch (Exception error)
+            catch (Exception ex)
             {
-                return BadRequest(error.Message);
+                return BadRequest(ex.Message);
             }
         }
 
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> BuscarPorId(Guid id)
+        [HttpGet("{id}")]
+        public IActionResult GetById(Guid id)
         {
             try
             {
-                var eventoBuscado = await _evento.BuscarPorId(id);
-
-                if (eventoBuscado == null)
-                {
-                    return NotFound();
-                }
-
-                return Ok(eventoBuscado);
-            }
-            catch (Exception error)
-            {
-                return BadRequest(error.Message);
-            }
-        }
-
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Atualizar(
-            Guid id,
-            [FromBody] EventoDTO eventoDTO)
-        {
-            try
-            {
-
-                var evento = new Evento()
-                {
-                    IdEvento = id,
-                    IdTipoEvento = eventoDTO.IdTipoEvento,
-                    IdInstituicao = eventoDTO.IdInstituicao,
-                    NomeEvento = eventoDTO.NomeEvento,
-                    Descricao = eventoDTO.Descricao,
-                    DataEvento = eventoDTO.DataEvento,
-                    ImagemUrl = eventoDTO.ImagemUrl
-
-                };
-
-                await _evento.Atualizar(id, evento);
+                var evento = _eventoRepository.BuscarPorId(id);
+                if (evento == null) return NotFound("Evento não encontrado.");
 
                 return Ok(evento);
-
             }
-            catch (Exception error)
+            catch (Exception ex)
             {
-                return BadRequest(error.Message);
+                return BadRequest(ex.Message);
             }
         }
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Cadastrar(
-           Guid id,
-           [FromBody] EventoDTO eventoDTO)
+
+        [HttpPut("{id}")]
+        public IActionResult Put(Guid id, EventoDTO dto)
         {
             try
             {
-
-                var evento = new Evento()
+                var evento = new Evento
                 {
-                    IdEvento = id,
-                    IdTipoEvento = eventoDTO.IdTipoEvento,
-                    IdInstituicao = eventoDTO.IdInstituicao,
-                    NomeEvento = eventoDTO.NomeEvento,
-                    Descricao = eventoDTO.Descricao,
-                    DataEvento = eventoDTO.DataEvento,
-                    ImagemUrl = eventoDTO.ImagemUrl
-
+                    NomeEvento = dto.NomeEvento,
+                    Descricao = dto.Descricao,
+                    DataEvento = dto.DataEvento,
+                    ImagemUrl = dto.ImagemUrl,
+                    IdTipoEvento = dto.IdTipoEvento,
+                    IdInstituicao = dto.IdInstituicao
                 };
 
-                await _evento.Cadastrar(evento);
-               
-                return Ok(evento);
-
+                _eventoRepository.Atualizar(id, evento);
+                return NoContent();
             }
-            catch (Exception error)
+            catch (Exception ex)
             {
-                return BadRequest(error.Message);
+                return BadRequest(ex.Message);
             }
         }
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Deletar(Guid id)
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(Guid id)
         {
             try
             {
-                await _evento.Deletar(id);
-                return Ok("Evento Deletado");
+                _eventoRepository.Deletar(id);
+                return NoContent();
             }
-            catch (Exception erro)
+            catch (Exception ex)
             {
-                return BadRequest(erro.Message);
+                return BadRequest(ex.Message);
             }
-        }
-
         }
     }
+}
