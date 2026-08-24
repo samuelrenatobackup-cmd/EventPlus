@@ -34,11 +34,14 @@ namespace EventPlusWebAPI.Repositories
         public async Task Atualizar(Guid id, Instituicao instituicao)
         {
             var instituicaoBuscada = await _instituicao.Instituicao.FindAsync(id);
+
             if (instituicaoBuscada != null)
             {
-                _instituicao.Instituicao.Update(instituicao);
-                await _instituicao.SaveChangesAsync();
+                instituicaoBuscada.Cnpj = instituicao.Cnpj;
+                instituicaoBuscada.NomeFantasia = instituicao.NomeFantasia;
+                instituicaoBuscada.Endereco = instituicao.Endereco;
 
+                await _instituicao.SaveChangesAsync();
             }
         }
         public async Task Deletar(Guid id)

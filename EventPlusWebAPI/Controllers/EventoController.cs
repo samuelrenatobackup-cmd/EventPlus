@@ -1,8 +1,6 @@
-﻿
-using EventPlusWebAPI.DTO;
+﻿using EventPlusWebAPI.DTO;
 using EventPlusWebAPI.Interfaces;
 using EventPlusWebAPI.Models;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventPlusWebAPI.Controllers
@@ -20,7 +18,7 @@ namespace EventPlusWebAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post(EventoDTO dto)
+        public async Task<IActionResult> Post(EventoDTO dto)
         {
             try
             {
@@ -34,46 +32,49 @@ namespace EventPlusWebAPI.Controllers
                     IdInstituicao = dto.IdInstituicao
                 };
 
-                _eventoRepository.Cadastrar(evento);
+                await _eventoRepository.Cadastrar(evento);
+
                 return StatusCode(201, evento);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(e.InnerException?.Message ?? e.Message);
             }
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
             try
             {
-                return Ok(_eventoRepository.Listar());
+                return Ok(await _eventoRepository.Listar());
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(e.InnerException?.Message ?? e.Message);
             }
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             try
             {
-                var evento = _eventoRepository.BuscarPorId(id);
-                if (evento == null) return NotFound("Evento não encontrado.");
+                var evento = await _eventoRepository.BuscarPorId(id);
+
+                if (evento == null)
+                    return NotFound("Evento não encontrado.");
 
                 return Ok(evento);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(e.InnerException?.Message ?? e.Message);
             }
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(Guid id, EventoDTO dto)
+        public async Task<IActionResult> Put(Guid id, EventoDTO dto)
         {
             try
             {
@@ -87,26 +88,28 @@ namespace EventPlusWebAPI.Controllers
                     IdInstituicao = dto.IdInstituicao
                 };
 
-                _eventoRepository.Atualizar(id, evento);
+                await _eventoRepository.Atualizar(id, evento);
+
                 return NoContent();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(e.InnerException?.Message ?? e.Message);
             }
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                _eventoRepository.Deletar(id);
+                await _eventoRepository.Deletar(id);
+
                 return NoContent();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(e.InnerException?.Message ?? e.Message);
             }
         }
     }

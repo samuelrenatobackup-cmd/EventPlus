@@ -10,8 +10,11 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 //Configuração do EFcore - Banco de dados 
-builder.Services.AddDbContext<EventContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default Connection")));
 
+builder.Services.AddDbContext<EventContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
 
 //corta o ciclo Usuario-
 builder.Services.AddControllers()
@@ -21,13 +24,14 @@ builder.Services.AddControllers()
     });
 
 //Injeção de dependência 
+// Injeção de dependência 
 builder.Services.AddScoped<ITipoUsuario, TipoUsuarioRepository>();
 builder.Services.AddScoped<ITipoEvento, TipoEventoRepository>();
 builder.Services.AddScoped<IInstituicao, InstituicaoRepository>();
-builder.Services.AddScoped<IComentario, ComentarioRepository>(); 
+builder.Services.AddScoped<IComentario, ComentarioRepository>();
 builder.Services.AddScoped<IEvento, EventoRepository>();
 builder.Services.AddScoped<IPresenca, PresencaRepository>();
-
+builder.Services.AddScoped<IUsuario, UsuarioRepository>();
 
 
 // Autentificação JWT
@@ -60,7 +64,7 @@ builder.Services.AddAuthentication(options =>
 
         // chave secreta utilizada para validar a assinatura do token
         IssuerSigningKey = new SymmetricSecurityKey(
-            System.Text.Encoding.UTF8.GetBytes("eventos-chaves-autenticacao-webapi-dev")
+            System.Text.Encoding.UTF8.GetBytes("Jwt:Key")
 
             )
 

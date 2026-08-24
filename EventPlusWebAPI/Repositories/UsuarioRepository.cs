@@ -20,19 +20,22 @@ namespace EventPlusWebAPI.Repositories
         public async Task Atualizar(Guid id, Usuario usuario)
         {
             var usuarioBuscado = await _context.Usuario.FindAsync(id);
-            if(usuarioBuscado != null)
+
+            if (usuarioBuscado != null)
             {
                 usuarioBuscado.Nome = usuario.Nome;
                 usuarioBuscado.Email = usuario.Email;
+
                 if (!string.IsNullOrEmpty(usuario.Senha))
                 {
-                    usuarioBuscado.Senha = usuario.Senha;
+                    usuarioBuscado.Senha = Criptografia.GerarHash(usuario.Senha);
                 }
-                _context.Usuario.Update(usuario);
+
+                usuarioBuscado.IdTipoUsuario = usuario.IdTipoUsuario;
+
                 await _context.SaveChangesAsync();
             }
         }
-
         public async Task<Usuario> BuscarPorId(Guid id)
         {
             return await _context.Usuario.FirstOrDefaultAsync(t => t.IdUsuario == id);

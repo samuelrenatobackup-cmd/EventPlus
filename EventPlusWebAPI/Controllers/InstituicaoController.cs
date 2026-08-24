@@ -84,26 +84,18 @@ namespace EventPlusWebAPI.Controllers
 
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Atualizar(
-            Guid id,
-            [FromBody] InstituicaoDTO DTO)
+    Guid id,
+    [FromBody] Instituicao instituicao)
         {
             try
             {
-                var instituicao = new Instituicao()
-                {
-                    IdInstituicao = id,
-                    Cnpj = DTO.CNPJ,
-                    NomeFantasia = DTO.NomeFantasia,
-                    Endereco = DTO.Endereco
-                };
-
                 await _instituicao.Atualizar(id, instituicao);
 
                 return Ok("Instituição atualizada com sucesso.");
             }
-            catch (Exception erro)
+            catch (Exception e)
             {
-                return BadRequest(erro.Message);
+                return BadRequest(e.InnerException?.Message ?? e.Message);
             }
         }
     }

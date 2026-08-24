@@ -5,7 +5,7 @@ using EventPlusWebAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventPlus.WebAPI.Controllers
+namespace EventPlusWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -13,11 +13,12 @@ namespace EventPlus.WebAPI.Controllers
     {
 
         private readonly IUsuario _usuario;
+   
+
         public UsuarioController(IUsuario usuario)
         {
             _usuario = usuario;
         }
-
         [HttpGet]
         public async Task<IActionResult> Listar()
         {
@@ -25,9 +26,9 @@ namespace EventPlus.WebAPI.Controllers
             {
                 return Ok(await _usuario.Listar());
             }
-            catch (Exception erro)
+            catch (Exception e)
             {
-                return BadRequest(erro.Message);
+                return BadRequest(e.InnerException?.Message ?? e.Message);
             }
         }
 
@@ -51,6 +52,7 @@ namespace EventPlus.WebAPI.Controllers
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 return BadRequest(e.Message);
             }
         }
@@ -60,17 +62,29 @@ namespace EventPlus.WebAPI.Controllers
         {
             try
             {
-
-
                 await _usuario.Atualizar(id, usuario);
 
-                return StatusCode(201, usuario);
+                usuario.IdUsuario = id;
 
+                return Ok(usuario);
             }
             catch (Exception e)
             {
+                return BadRequest(e.InnerException?.Message ?? e.Message);
+            }
+        }
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Deletar(Guid id)
+        {
+            try
+            {
+                await _usuario.Deletar(id);
 
-                return BadRequest(e.Message);
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.InnerException?.Message ?? e.Message);
             }
         }
     }

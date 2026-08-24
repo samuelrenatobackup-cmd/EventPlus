@@ -12,12 +12,12 @@ namespace EventPlusWebAPI.Controllers
     public class LoginController : ControllerBase
     {
         private readonly IUsuario _usuario;
-
-        public LoginController(IUsuario usuario)
+        private readonly IConfiguration _configuration;
+        public LoginController(IUsuario usuario, IConfiguration configuration)
         {
             _usuario = usuario;
+            _configuration = configuration;
         }
-
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginDTO DTO)
         {
@@ -56,11 +56,10 @@ namespace EventPlusWebAPI.Controllers
             };
 
             var chaveSecreta = new SymmetricSecurityKey(
-                System.Text.Encoding.UTF8.GetBytes(
-                    "eventos-chaves-autenticacao-webapi-dev"
-                )
+            System.Text.Encoding.UTF8.GetBytes(
+            _configuration["Jwt:Key"]
+               )
             );
-
             var credenciais = new SigningCredentials(
                 chaveSecreta,
                 SecurityAlgorithms.HmacSha256
