@@ -11,23 +11,33 @@ namespace EventPlusWebAPI.Controllers
     public class EventoController : ControllerBase
     {
         private readonly IEvento _eventoRepository;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public EventoController(IEvento eventoRepository)
+        public EventoController(IEvento eventoRepository, ICloudinaryService cloudinaryService)
         {
             _eventoRepository = eventoRepository;
+            _cloudinaryService = cloudinaryService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(EventoDTO dto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Cadastrar(EventoDTO dto)
         {
             try
             {
+                string? imagemUrl = null;
+
+                if (dto.ArquivoImagem is not null)
+                {
+                    imagemUrl = await _cloudinaryService.UploadImagem(dto.ArquivoImagem);
+                }
+
                 var evento = new Evento
                 {
                     NomeEvento = dto.NomeEvento,
                     Descricao = dto.Descricao,
                     DataEvento = dto.DataEvento,
-                    ImagemUrl = dto.ImagemUrl,
+                    ImagemUrl = imagemUrl,
                     IdTipoEvento = dto.IdTipoEvento,
                     IdInstituicao = dto.IdInstituicao
                 };

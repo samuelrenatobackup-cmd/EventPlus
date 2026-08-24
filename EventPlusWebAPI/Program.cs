@@ -1,30 +1,32 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using EventPlusWebAPI.BdContextEvent;
 using EventPlusWebAPI.Interfaces;
-using EventPlusWebAPI.Models;
 using EventPlusWebAPI.Repositories;
-
+using EventPlusWebAPI.Services;
+using EventPlusWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
-//Configuração do EFcore - Banco de dados 
 
+// Configuração do EF Core - Banco de dados
 builder.Services.AddDbContext<EventContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
     ));
 
-//corta o ciclo Usuario-
+// Configuração dos Controllers
+// Evita problemas com ciclos de referência entre entidades
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler =
+            ReferenceHandler.IgnoreCycles;
     });
-
-//Injeção de dependência 
-// Injeção de dependência 
+builder.Services.AddScoped<EmailService>();
+// Injeção de dependência
 builder.Services.AddScoped<ITipoUsuario, TipoUsuarioRepository>();
 builder.Services.AddScoped<ITipoEvento, TipoEventoRepository>();
 builder.Services.AddScoped<IInstituicao, InstituicaoRepository>();
@@ -32,23 +34,26 @@ builder.Services.AddScoped<IComentario, ComentarioRepository>();
 builder.Services.AddScoped<IEvento, EventoRepository>();
 builder.Services.AddScoped<IPresenca, PresencaRepository>();
 builder.Services.AddScoped<IUsuario, UsuarioRepository>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+// Configuração do Cloudinary
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("Cloudinary")
+);
 
-
-// Autentificação JWT
-// Configurar  como a API vai validar os tokens recebidos nas requisições
+// Autenticação JWT
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
+    options.DefaultAuthenticateScheme =
+        JwtBearerDefaults.AuthenticationScheme;
 
+    options.DefaultChallengeScheme =
+        JwtBearerDefaults.AuthenticationScheme;
+})
 .AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-
-        // Valida quem  emitiu token
+        // Valida quem emitiu o token
         ValidateIssuer = true,
         ValidIssuer = "EventPlusWebAPI",
 
@@ -56,31 +61,34 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidAudience = "EventPlusWebAPI",
 
-        // Valida se o token ainda dentro do prazo de validade
+        // Valida se o token ainda está dentro da validade
         ValidateLifetime = true,
 
-        // Define a tolerancia de clock entre o servidores
+        // Tolerância de horário entre servidores
         ClockSkew = TimeSpan.FromMinutes(5),
 
-        // chave secreta utilizada para validar a assinatura do token
+        // Chave usada para validar a assinatura
+        ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
-            System.Text.Encoding.UTF8.GetBytes("Jwt:Key")
-
+            Encoding.UTF8.GetBytes(
+                builder.Configuration["Jwt:Key"]!
             )
-
-
+        )
     };
 });
 
-builder.Services.AddAuthentication();
-
-builder.Services.AddControllers();
+// Autorização
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection(); // Redireciona para HTTPS
-app.UseAuthentication();   // Verifica a autenticação
-app.UseAuthorization();    // Verifica as permissões
-app.MapControllers();      // Mapeia os controllers
-app.Run();                 // Inicia a aplicação
+app.UseHttpsRedirection();
 
+// JWT
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Controllers
+app.MapControllers();
+
+app.Run();

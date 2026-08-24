@@ -1,6 +1,7 @@
 ﻿using EventPlusWebAPI.BdContextEvent;
 using EventPlusWebAPI.Interfaces;
 using EventPlusWebAPI.Models;
+using EventPlusWebAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventPlusWebAPI.Repositories

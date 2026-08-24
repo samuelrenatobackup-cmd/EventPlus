@@ -1,6 +1,7 @@
 ﻿using EventPlusWebAPI.DTO;
 using EventPlusWebAPI.Interfaces;
 using EventPlusWebAPI.Models;
+using EventPlusWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventPlusWebAPI.Controllers
